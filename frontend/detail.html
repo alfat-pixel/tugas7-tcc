@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Detail Notes</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+    input,
+    textarea,
+    button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    .btn-secondary {
+      background-color: #dc3545;
+    }
+    .btn-secondary:hover {
+      background-color: #b52d3b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Detail Catatan</h1>
+    <input type="text" id="title" placeholder="Judul Catatan" disabled />
+    <textarea id="content" placeholder="Isi Catatan"></textarea>
+    <button onclick="updateNote()">Simpan Perubahan</button>
+    <button onclick="goBack()" class="btn-secondary">Kembali</button>
+  </div>
+<script src="utils.js"></script>
+<script>
+  //const BASE_URL = "http://localhost:5000";
+
+  const token = localStorage.getItem("accessToken");
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const noteId = urlParams.get("id");
+
+  // Redirect jika tidak ada ID
+  if (!noteId) {
+    alert("ID catatan tidak ditemukan");
+    window.location.href = "frontend.html";
+  }
+
+  // Redirect jika belum login
+  if (!token) {
+    alert("Silakan login terlebih dahulu");
+    window.location.href = "frontend.html";
+  }
+
+  // Load data catatan
+  async function loadNote() {
+    try {
+      const response = await fetch(`${BASE_URL}/notes/${noteId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        alert("Gagal mengambil data catatan");
+        return;
+      }
+
+      const note = await response.json();
+      document.getElementById("title").value = note.title;
+      document.getElementById("content").value = note.content || "";
+    } catch (err) {
+      alert("Terjadi kesalahan saat mengambil data catatan");
+    }
+  }
+
+  // Simpan perubahan catatan
+  async function updateNote() {
+    const content = document.getElementById("content").value;
+
+    try {
+      const res = await fetch(`${BASE_URL}/notes/${noteId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content }), // hanya content yang bisa diedit
+      });
+
+      if (res.ok) {
+        alert("Catatan berhasil diperbarui");
+      } else {
+        const data = await res.json();
+        alert("Gagal memperbarui catatan: " + (data.message || "Error"));
+      }
+    } catch (err) {
+      alert("Terjadi kesalahan saat memperbarui catatan");
+    }
+  }
+
+  function goBack() {
+    window.location.href = "frontend.html";
+  }
+
+  // Panggil saat halaman dibuka
+  loadNote();
+</script>
+
+</body>
+</html>
