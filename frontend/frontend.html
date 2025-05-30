@@ -193,7 +193,7 @@
       if (!title) return alert("Judul wajib diisi");
 
       try {
-        const res = await fetch(`${BASE_URL}/notes`, {
+        const res = await fetch(`${BASE_URL}/add-notes`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -217,38 +217,45 @@
 
     // Load semua notes milik user
     async function loadNotes() {
-      const token = localStorage.getItem("accessToken");
-      if (!token) return;
+  const token = localStorage.getItem("accessToken");
+  if (!token) return;
 
-      const res = await fetch(`${BASE_URL}/notes`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+  const res = await fetch(`${BASE_URL}/notes`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
-      if (res.status === 401 || res.status === 403) {
-        alert("Token kadaluarsa. Silakan login ulang.");
-        localStorage.removeItem("accessToken");
-        updateUIOnLogin(false);
-        return;
-      }
+  if (res.status === 401 || res.status === 403) {
+    alert("Token kadaluarsa. Silakan login ulang.");
+    localStorage.removeItem("accessToken");
+    updateUIOnLogin(false);
+    return;
+  }
 
-      const notes = await res.json();
-      const notesContainer = document.getElementById("notesContainer");
-      notesContainer.innerHTML = "";
+  const notes = await res.json();
+  const notesContainer = document.getElementById("notesContainer");
+  notesContainer.innerHTML = "";
 
-      notes.forEach((note) => {
-        const noteItem = document.createElement("div");
-        noteItem.classList.add("note-item");
-        noteItem.innerHTML = `
-          <strong>${note.id}. ${note.title}</strong><br/>
-          <small>Dibuat: ${new Date(note.createdAt).toLocaleString()}</small><br/>
-          <small>Diperbarui: ${new Date(note.updatedAt).toLocaleString()}</small>
-        `;
-        notesContainer.appendChild(noteItem);
-      });
-    }
+  notes.forEach((note) => {
+    const noteItem = document.createElement("div");
+    noteItem.classList.add("note-item");
+    noteItem.innerHTML = `
+      <strong>${note.id}. ${note.title}</strong><br/>
+      <small>Dibuat: ${new Date(note.createdAt).toLocaleString()}</small><br/>
+      <small>Diperbarui: ${new Date(note.updatedAt).toLocaleString()}</small>
+    `;
 
+    // Tambahkan event klik untuk navigasi ke halaman detail dengan id note
+    noteItem.addEventListener("click", () => {
+      window.location.href = `detail.html?id=${note.id}`;
+    });
+
+    notesContainer.appendChild(noteItem);
+  });
+}
+
+ 
     // Delete note
     async function deleteNote() {
       const id = document.getElementById("deleteId").value;
@@ -256,7 +263,7 @@
       if (!id) return alert("Masukkan ID notes");
 
       try {
-        const res = await fetch(`${BASE_URL}/notes/${id}`, {
+        const res = await fetch(`${BASE_URL}/delete-notes/${id}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -283,7 +290,7 @@
       const token = localStorage.getItem("accessToken");
 
       try {
-        const res = await fetch(`${BASE_URL}/notes/${id}`, {
+        const res = await fetch(`${BASE_URL}/update-notes/${id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
