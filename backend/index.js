@@ -11,10 +11,7 @@ import { authenticateToken } from "./middleware/VerifyToken.js";
 
 const app = express();
 
-app.use(cors({
-  origin: "http://127.0.0.1:5500",   // domain frontend kamu
-  credentials: true                 // agar cookie dan token bisa dikirim
-}));
+app.use(cors());
 
 app.use(cookieParser());            // untuk parsing cookie (optional jika pakai refresh token via cookie)
 app.use(express.json());            // parsing body JSON
